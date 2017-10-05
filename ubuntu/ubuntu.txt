@@ -1,0 +1,27 @@
+chgrp:改变文件所属用户组。命令格式为：chgrp 用户名 文件或目录。
+chown:改变文件所有者。命令格式为：chown 所有者 文件或目录。
+chmod:改变文件的权限。命令格式为：chmod 权限属性 文件或目录。
+        chmod 777 test
+        chmod -R 775 test
+
+sudo su   # switch to root
+
+
+
+# nginx config-file in (/etc/nginx/sites-available/default)
+service nginx start
+sudo service nginx reload
+service nginx status    # active(runing) is ok
+ps -ef | grep nginx     # show nginx process
+
+kill -QUIT 30536        # kill process
+
+# query port
+netstat -tnlp
+
+
+# delete folders
+rm -rf 目录名字
+
+# rename folder
+mv A B
