@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>websocket</title>
+</head>
+<body>
+	<div class="container" id="app">
+		<textarea v-model="msg" cols="30" rows="10"></textarea>
+		<button @click="openWebSocket">openWebScoket</button>
+		<button @click="closeWebSocket">closeWebSocket</button>
+	</div>
+
+	<script src="https://vuejs.org/js/vue.js"></script>
+	<script>
+		new Vue({
+			data: {
+				ws: null,
+				msg: 'hello world'
+			},
+			methods: {
+				openWebSocket() {
+					var ws = new WebSocket("ws://localhost:9002");
+					ws.onopen = function()
+					{
+		        console.log("Web Socket 已连接上");
+		      };
+
+		      ws.onmessage = function (evt) 
+		      { 
+		      	console.log("数据已接收", evt);
+		      	var received_msg = evt.data;
+		      	alert("数据已接收...");
+		      };
+
+		      ws.onerror = function(err) {
+		      	console.error('ws error', err);
+		      }
+
+		      ws.onclose = function()
+		      { 
+		      	console.log("连接已关闭");
+		      };
+
+		      this.ws = ws;
+		    },
+		    closeWebSocket() {
+		    	if (this.ws) {
+		    		this.ws.close();
+		    	}
+		    }
+    },
+    sendMsg() {
+    	this.ws.send(this.msg);
+    }
+  },
+  created() {
+
+  }
+})
+
+  </script>
+</body>
+</html>
