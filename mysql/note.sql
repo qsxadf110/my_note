@@ -55,3 +55,9 @@ ALTER TABLE parts ADD INDEX idx_model (model);
 
 
 insert tb3 (id,username) values (4,'jona');
+
+-- 字符串长度
+length(str): 			是计算字段的长度一个汉字是算三个字符,一个数字或字母算一个字符
+CHAR_LENGTH(str) 		返回值为字符串str 的长度，长度的单位为字符。一个多字节字符算作一个单字符。对于一个包含五个二字节字符集, LENGTH()返回值为 10,而CHAR_LENGTH()的返回值为5。
+CHARACTER_LENGTH(str) CHARACTER_LENGTH()是CHAR_LENGTH()的同义词。
+BIT_LENGTH(str) 		返回2进制长度.
