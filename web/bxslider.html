@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>bxslider</title>
+	<link href="libs/bxslider/css/jquery.bxslider.css" rel="stylesheet" />
+</head>
+<body>
+
+	<ul class="bxslider" data-id="tangjian">
+		<li><img src="libs/bxslider/images/pic1.jpg" /></li>
+		<li><img src="libs/bxslider/images/pic2.jpg" /></li>
+		<li><img src="libs/bxslider/images/pic3.jpg" /></li>
+		<li><img src="libs/bxslider/images/pic1.jpg" /></li>
+		<li><img src="libs/bxslider/images/pic2.jpg" /></li>
+	</ul>
+
+	<script src="libs/jq/jquery-3.1.1.min.js"></script>
+	<script src="libs/bxslider/js/jquery.bxslider.js"></script>
+	<script>
+		$(document).ready(function(){
+			$('.bxslider').bxSlider({
+				mode: 'horizontal',
+				moveSlides: 2,
+				slideMargin: 0,
+				infiniteLoop: true,
+				slideWidth: 660,
+				minSlides: 2,
+				maxSlides: 3,
+				speed: 800,
+			});
+		});
+
+		(function ($) {
+			//TODO
+			$.fn.tj = function (option, param) {
+
+			}
+			console.log($(".bxslider").data("id"));
+		})(jQuery);
+	</script>
+</body>
+</html>

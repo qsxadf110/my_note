@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>vue</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="https://unpkg.com/mint-ui/lib/style.css">
+</head>
+<body>
+	<div id="app">
+		<!-- 双大括号会将数据解释为纯文本，而非 HTML 。为了输出真正的 HTML ，你需要使用 v-html 指令：数据绑定会被忽略 -->
+		<p>{{ message }}</p>
+		<input type="text" v-model="message">
+		<button v-on:click="reverseMessage">逆转消息</button>
+		<hr>
+		
+		<ol>
+			<li v-for="i in list">{{ i.text }}</li>
+		</ol>
+		<hr>
+		
+		<ol>
+			<todo-item v-for="item in foodList" v-bind:todo="item" v-bind:key="item.id"></todo-item>
+		</ol>
+		<hr>
+		
+		<a :href="url">测试连接</a>
+		<button v-on:click="changeUrl">改变连接地址</button>
+
+		<mt-button @click.native="handleClick">按钮</mt-button>
+
+		<mt-datetime-picker
+				ref="picker"
+		  v-model="times"
+		  type="date"
+		  @confirm="handleConfirm">
+		</mt-datetime-picker>
+		
+	</div>
+	
+	
+	
+	<script src="js/vue-2.4.2.js"></script>
+	<script src="js/vue-resource-v1.3.4.js"></script>
+	
+	<!-- 引入组件库 -->
+	<script src="https://unpkg.com/mint-ui/lib/index.js"></script>
+	<script>
+		// 注册一个组件
+		Vue.component('todo-item', {
+			props: ['todo'],
+			template: '<li>{{ todo.text }}</li>'
+		})
+		
+		// 每个 Vue.js 应用都是通过构造函数 Vue 创建一个 Vue 的根实例 启动的：
+		var vm = new Vue({
+			el: '#app',
+			data: {
+				message: 'Hello Vue!',
+				url: 'https://www.baidu.com',
+				list: [
+					{text: 'php'},
+					{text: 'java'},
+					{text: 'c/c++'}
+				],
+				times: '2017-09-16',
+				foodList: [
+					{id: 1, text: '西红柿炒鸡蛋'},
+					{id: 1, text: '臭豆腐'},
+					{id: 2, text: '夫妻肺片'}
+				]
+			},
+			methods: {
+				reverseMessage: function() {
+					this.message = this.message.split('').reverse().join('');
+				},
+				changeUrl: function() {
+					this.url = 'http://www.taobao.com';
+				},
+				handleConfirm: function() {
+					console.log('handleConfirm');
+				},
+        handleClick: function() {
+          //this.$toast('Hello world!')
+          this.$refs.picker.open();
+        }
+			},
+			created: function () {
+				// vm实例被创建后，调用该函数  		钩子的 this 指向调用它的 Vue 实例
+				
+				var param = {method:"agent.agent.serverAddress",format:"json",charset:"utf-8",version:"1.0",timestamp:1,biz_content:{agentid:"00bA05haB0d9ZC0fwGD09Q2OA30insbQ",channelid:"frdt0C1GG0t91P0McFo0rbA1he5yurbS"}};
+				
+				/*this.$http.post('http://localhost/proxy/api/Index.php', param, {emulateJSON: true}).then(response => {
+					var datas = response.body;
+					console.log(datas);
+				}, response => {
+					// error callback
+					alert('error');
+				});*/
+					
+			}
+		
+		});
+		
+		
+	</script>
+</body>
+</html>

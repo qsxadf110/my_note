@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>qrcode</title>
+</head>
+<body>
+
+  <!--canvas-->
+  <!--image-->
+  <div id="code"></div>
+
+  <script src="libs/jq/jquery-2.1.4.min.js"></script>
+  <script src="libs/qrcode/jquery.qrcode.min.js"></script>
+  <script>
+    $("#code").qrcode({
+      width:200,
+      height:200,
+      text:"https://www.baidu.com/"
+    })
+  </script>
+</script>
+</body>
+</html>
