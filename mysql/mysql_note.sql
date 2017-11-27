@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS 表名(
 
     -- 常用于 类型、记录状态等
     字段名 tinyint 	UNSIGNED NOT NULL default 0 comment '类型',
-    字段名 CHAR(10) not null comment '名字',
+    字段名 CHAR(10) not null default '' comment '名字',
     字段名 VARCHAR(32) 				not null 						comment '名字',
     字段名 decimal(6,2) 			not null default 0  			comment '身高',
     字段名 DATE 					not null default '0000-00-00'  	comment '出厂时间',
@@ -60,7 +60,7 @@ alter table 表名 add id int auto_increment primary key
 -- 设置自增起始值
 alter table 表名 AUTO_INCREMENT=10000;
 -- 清空表
-TRUNCATE TABLE table1
+TRUNCATE TABLE 表名
 
 INSERT INTO table_name ( field1, field2,...fieldN )
                        VALUES
