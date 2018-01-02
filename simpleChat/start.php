@@ -10,6 +10,11 @@ function handle_connection($connection)
     global $text_worker, $global_uid;
     // 为这个连接分配一个uid
     $connection->uid = ++$global_uid;
+    foreach($text_worker->connections as $conn)
+    {
+        // $conn->send的数据会自动调用JsonNL::encode方法打包，然后发往客户端
+        $conn->send("游客_{$connection->uid} 已上线");
+    }
 }
 
 // 当客户端发送消息过来时，转发给所有人
@@ -20,7 +25,7 @@ function handle_message($connection, $data)
     foreach($text_worker->connections as $conn)
     {
         // $conn->send的数据会自动调用JsonNL::encode方法打包，然后发往客户端
-        $conn->send("user[{$connection->uid}] said: $data");
+        $conn->send("游客_{$connection->uid} : $data");
     }
 }
 
@@ -30,7 +35,7 @@ function handle_close($connection)
     global $text_worker;
     foreach($text_worker->connections as $conn)
     {
-        $conn->send("user[{$connection->uid}] logout");
+        $conn->send("游客_{$connection->uid} 已离开");
     }
 }
 

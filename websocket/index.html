@@ -3,66 +3,88 @@
 <head>
 	<meta charset="UTF-8">
 	<title>websocket</title>
+	<style>
+		.message-box {
+			width: 500px;
+			height: 500px;
+			border:1px dashed #d3d3d3;
+			overflow-y: scroll;
+		}
+		.message-box p {
+			margin: 0;
+		}
+		.message-input {
+			width:500px;
+			resize: none;
+		}
+	</style>
 </head>
 <body>
-	<div class="container" id="app">
-		<textarea v-model="msg" cols="30" rows="10"></textarea>
-		<button @click="sendMsg">sendMsg</button>
-		<button @click="openWebSocket">openWebSocket</button>
-		<button @click="closeWebSocket">closeWebSocket</button>
+<div class="container" id="app">
+	<div class="message-box">
+		<p v-for="(v,i) in msgList">{{v}}</p>
 	</div>
+	<br>
 
-	<script src="../libs/vue.js"></script>
-	<script>
-		new Vue({
+	<textarea class="message-input" v-model="msg" rows="10"></textarea><br>
+
+	<button @click="sendMsg">发送信息</button>
+	<button @click="openWebSocket">连接服务器</button>
+	<button @click="closeWebSocket">关闭连接</button>
+</div>
+
+<script src="../libs/vue.js"></script>
+<script>
+	new Vue(
+		{
 			el: '#app',
 			data: {
 				ws: null,
-				msg: 'hello world'
+				msg: 'hello world',
+				msgList: []
 			},
 			methods: {
-				test: function () {
-					console.log('test');
-				},
 				openWebSocket: function () {
+					var el = this;
 					var ws = new WebSocket("ws://127.0.0.1:9502");
-					ws.onopen = function()
-					{
-		        console.log("Web Socket 已连接上");
-		      };
+					ws.onopen = function () {
+						console.log("Web Socket 已连接上");
+					};
 
-		      ws.onmessage = function (evt) 
-		      { 
-		      	console.log("数据已接收", evt);
-		      	var received_msg = evt.data;
-		      	
-		      };
+					ws.onmessage = function (evt) {
+						console.log("数据已接收", evt);
+						el.msgList.push(evt.data);
+					};
 
-		      ws.onerror = function(err) {
-		      	console.error('ws error', err);
-		      }
+					ws.onerror = function (err) {
+						console.error('ws error', err);
+					}
 
-		      ws.onclose = function()
-		      { 
-		      	console.log("连接已关闭");
-		      };
+					ws.onclose = function () {
+						console.log("连接已关闭");
+					};
 
-		      this.ws = ws;
-		    },
-		    closeWebSocket() {
-		    	if (this.ws) {
-		    		this.ws.close();
-		    	}
-		    },
-		    sendMsg() {
-		    	this.ws.send(this.msg);
-		    }
-		  },
-		  created() {
-		  	console.log('created')
-		  }
+					this.ws = ws;
+				},
+				closeWebSocket() {
+					if (this.ws) {
+						this.ws.close();
+					}
+				},
+				sendMsg() {
+
+					if(this.msg) {
+						this.ws.send(this.msg);
+						//this.msgList.push(this.msg);
+					}
+
+				}
+			},
+			created() {
+				this.openWebSocket();
+			}
 		})
 
-  </script>
+</script>
 </body>
 </html>
