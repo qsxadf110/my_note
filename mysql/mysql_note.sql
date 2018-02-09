@@ -1,9 +1,9 @@
 
 -- 数值类型
 --
--- tinyint		1 字节	(-128,127)					(0,255)	小整数值
--- smallint		2 字节	(-32 768,32 767)			(0,65 535)	大整数值
--- mediumint	3 字节	(-8 388 608,8 388 607)		(0,16 777 215)	大整数值
+-- tinyint		1 字节	(-128,127)					    (0,255)	小整数值
+-- smallint		2 字节	(-32 768,32 767)			    (0,65 535)	大整数值
+-- mediumint	3 字节	(-8 388 608,8 388 607)		    (0,16 777 215)	大整数值
 -- int/integer	4 字节	(-2 147 483 648,2 147 483 647)	(0,4 294 967 295)	大整数值
 -- bigint		8 字节	
 -- FLOAT		4 字节		单精度浮点数值
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS 表名(
     id INT UNSIGNED not null AUTO_INCREMENT comment '主键',
 
     # 常用于 类型、记录状态等
-    字段名 tinyint 	UNSIGNED NOT NULL default 0 comment '类型',
+    字段名 tinyint UNSIGNED NOT NULL default 0 comment '类型',
     # 小于指定的位数将填0，指定为zerofill，则自动添加unsigned属性
     字段名 INT(5) ZEROFILL NOT NULL default 0 comment '类型',
     # 会删除末尾空格
@@ -59,12 +59,26 @@ CREATE TABLE IF NOT EXISTS 表名(
     字段名 TIMESTAMP not null default current_timestamp ON UPDATE current_timestamp comment '最后修改的时间',
     字段名 TIMESTAMP not null default '0000-00-00 00:00:00' comment '出厂时间',
     # 默认4位格式 1901~2115和0000     2位格式  70~69，表示1970~2069（5.5.27，已不再支持）
-    字段名 YEAR not null default '0000'  	comment '年份',
+    字段名 YEAR not null default '0000' comment '年份',
     字段名 text not null default '' comment '个人简介',
     # 设置主键，多主键，以逗号分隔。
     PRIMARY KEY (id),
-    # 唯一键
-    UNIQUE(id)
+    # 唯一键，要去该列唯一，允许为空，但只能有一个空值
+    CONSTRAINT 约束名 UNIQUE(字段名),
+    # 创建外键，外键名为定义的外键约束的名称，一个表中不能有相同名称的外键
+	CONSTRAINT 外键名 FOREIGN KEY 字段名 REFERENCES 主表名(主键列),
+
+	# 普通索引
+	INDEX 索引名(字段名),
+	# 唯一索引
+	UNIQUE INDEX 索引名(字段名),
+	# 单列索引
+	INDEX 索引名(字段名(20)),
+	# 全文索引
+	-- 可以用于全文搜索，只有myisam存储引擎支持fulltext索引，并且只为char、varchar和text列
+	-- 对整个列进行，不支持局部（前缀）索引
+	FULLTEXT INDEX 索引名(字段名)
+
 )
 ENGINE=InnoDB -- InnoDB,myisam
 COMMENT='表注释'
@@ -144,21 +158,26 @@ COMMIT;
 # 修改已创建了的表注释
 ALTER TABLE 表名 COMMENT '修改表注释';
 # 更改表名
-ALTER TABLE 表名 rename 表名1;
+ALTER TABLE 表名 RENAME 表名1;
 # 设置自增起始值
 ALTER TABLE 表名 AUTO_INCREMENT=10000;
 
-# 修改现有字段，加上解释     First 放在最前面  after 放在某字段后面
-ALTER TABLE 表名 MODIFY COLUMN 字段名 VARCHAR(100) COMMENT '修改列注释' AFTER 字段名;
+# 修改字段类型，加上解释     First 放在最前面  after 放在某字段后面
+ALTER TABLE 表名 MODIFY 字段名 VARCHAR(100) COMMENT '修改列注释' AFTER 字段名;
 # 修改字段的默认值，这条语句会直接修改.frm文件而不涉及表数据
-ALTER TABLE 表名 MODIFY COLUMN 字段名 set default 5;
-# 添加字段
-ALTER TABLE 表名 ADD 字段名 int AUTO_INCREMENT primary key;
-# 删除字段
-ALTER TABLE 表名 DROP COLUMN 字段名;
+ALTER TABLE 表名 MODIFY 字段名 set default 5;
 # 更改字段名，并修改字段类型为int
-ALTER TABLE 表名 CHANGE 字段名 字段名1 int;
+ALTER TABLE 表名 CHANGE 旧字段名 新字段名 int;
 -- change和modify都可以修改表的定义，不同的是change后面需要写两次列名，不方便。但是change的优点是可以修改列名称，modify则不能；
+
+# 添加字段
+ALTER TABLE 表名 ADD 字段名 数据类型 AUTO_INCREMENT primary key;
+# 删除字段
+ALTER TABLE 表名 DROP 字段名;
+# 删除外键约束
+ALTER TABLE 表名 DROP FOREIGN KEY 键名;
+
+
 
 
 /**
@@ -196,6 +215,22 @@ SELECT * FROM 表2;
 
 
 /**
+ * 子查询
+ * ANY、ALL、EXISTS
+ */
+
+# any和some是同义词，表示满足任一条件，他们允许创建一个表达式对子查询的返回值列表进行比较，只要满足任一条件，就返回一个结果给外层。
+# 返回表2中的所有num2列，然后与表1中的num1进行比较，只要大于num2的任何1个值，即为符合条件的结果。
+select num1 from 表1 WHERE num1 > ANY (SELECT num2 FROM 表2);
+# 返回表2中的所有num2列，然后与表1中的num1进行比较，大于所有num2的值，即为符合条件的结果。
+select num1 from 表1 WHERE num1 > ALL (SELECT num2 FROM 表2);
+# 查询suppliers表中是否存在id=107的供应商，如果存在，则查询fruits表中price大于10的记录。
+SELECT * FROM fruits WHERE price > 10 AND exists(SELECT s_name FROM suppliers WHERE id = 107);
+# 查询suppliers表中是否存在id=107的供应商，如果 不 存在，则查询fruits表中price大于10的记录。
+SELECT * FROM fruits WHERE price > 10 AND NOT exists(SELECT s_name FROM suppliers WHERE id = 107);
+
+
+/**
  * 创建索引
  *
  * 最适合索引的列是出现在where子句中的列，或连接子句中的列；有区分度的索引
@@ -205,17 +240,40 @@ SELECT * FROM 表2;
  * InnoDB表的普通索引都会保存主键的键值，所以主键要尽可能的短
  */
 
-# 为表创建10个字节的前缀索引
+# 为表创建10个字节的前缀索引，和alter table 作用相同
 CREATE INDEX 索引名 ON 表名 (字段名(10));
+# 查看指定表中创建的索引
+SHOW INDEX FROM 表名 \G;
+# 添加普通索引
+ALTER TABLE 表名 ADD INDEX 索引名(字段名);
+# 添加唯一索引
+ALTER TABLE 表名 ADD UNIQUE INDEX 索引名(字段名);
 # 删除索引
+ALTER TABLE 表名 DROP INDEX 索引名;
 DROP INDEX 索引名 ON 表名;
+
+/**
+ * 视图
+ */
+
+# 创建视图
+CREATE VIEW 视图名 AS SELECT 字段名1,字段名2 FROM 表名;
+CREATE VIEW 视图名(字段名a, 字段名b) AS SELECT 字段名1, 字段名2 FROM 表名;
+# 查看视图
+DESCRIBE 视图名;
+DESC 视图名;
+# 修改视图
+CREATE OR REPLACE VIEW 视图名 AS SELECT 字段名1,字段名2 FROM 表名;
+ALTER VIEW 视图名 AS SELECT 字段名1,字段名2 FROM 表名;
+# 删除视图
+DROP VIEW IF EXISTS 视图名;
+
 
 /**
  * 聚合
  * having 对聚合后的结果进行条件过滤
  * where  对聚合前就对记录进行过滤
  */
-
 
 # 删除指定数据库下所有前缀为XXX的表
 SELECT concat('drop table 库名.', table_name, ';') FROM tables WHERE table_schema='库名' and table_name LIKE '前缀%';
@@ -377,6 +435,120 @@ SHOW VARIABLES LIKE '%query_cache%';
 /**
  * mysqlimport  数据导入工具
  */
+
+
+/**
+ * 权限与安全
+ *
+ * mysql安装后默认创建用户root@localhost 表示用户root只能从本地进行连接才可以通过认证
+ * 3个最重要的权限表：user、db、host
+ * user中4个重要部分：用户列、权限列、安全列、资源控制列
+ * 权限列分为：普通权限、管理权限
+ *
+ * 用户连接时，权限表的存取过程：
+ * 1.先从user表中的host、user和password这3个字段中判断连接的IP、用户名和密码是否存在于表中
+ * 2.通过验证后，按照以下权限表的顺序得到数据库权限：user->db->tables_priv->columns_priv
+ * 在这几个权限表中，权限范围依次递减，全局权限覆盖局部权限
+ *
+ * 对所有数据库都具有相同权限的用户记录并不需要记录到db表，或者说 user表中的每个权限都代表了对所有数据库都有的权限
+ */
+
+# 创建用户z1@localhost，并赋予所有数据库上的所有表的select权限，只能从本地连接
+GRANT SELECT on *.* TO z1@localhost;
+# 在上面的语句基础上，增加对z1的grant权限
+GRANT ALL PRIVILEGES ON *.* TO z1@localhost WITH GRANT OPTION;
+# 在上面的语句基础上，设置密码为 "123"
+GRANT ALL PRIVILEGES ON *.* TO z1@localhost IDENTIFIED BY '123' WITH GRANT OPTION;
+# 创建用户z2，可从任何ip进行连接，权限为对test1数据库里的所有表进行select、update、insert、delete操作，密码为123
+GRANT SELECT,INSERT,UPDATE,DELETE ON test1.* TO 'z2'@'%' IDENTIFIED BY '123';
+-- host值可以为主机名或IP号
+-- host 值 % 匹配任何主机名，空host等价于 %
+# 授予super、process、file权限给用户z3@%
+-- 因为这几个权限都属于管理权限，因此不能够指定某个数据库，on后面必须跟 *.*
+GRANT SUPER, PROCESS, FILE ON *.* TO 'z3'@'%';
+# 只授予登录权限给z4@localhost
+GRANT USAGE ON *.* TO 'z4'@'localhost';
+
+# 查看用户z1@localhost的权限
+SELECT * FROM user where user='z1' and host='localhost' \G;
+SELECT * FROM db   where user='z1' and host='localhost' \G;
+# 查看用户z1@localhost的权限 - grants
+SHOW GRANTS FOR z1@localhost;
+-- host可以不写，默认是 "%"
+
+# 修改账号密码（在命令行指定密码）
+$ mysqladmin -u user_name -h host_name password "newpwd"
+# 将用户 z1 的密码改为 biscuit
+SET PASSWORD for 'z1'@'%' = PASSWORD('biscuit');
+# 更改自己的密码
+SET PASSWORD = PASSWORD('biscuit');
+# 直接修改user表，改后还要刷新权限表
+UPDATE user SET password=password('123') WHERE user='root' AND host='localhost';
+
+# 收回z1@localhost上的insert、select权限
+REVOKE SELECT ,INSERT ON *.* FROM z1@localhost;
+# 删除用户 z2@localhost
+DROP USER z2@localhost;
+# 刷新权限
+FLUSH PRIVILEGES;
+
+
+# 将etc/passwd文件加载到表t1中
+LOAD DATA INFILE '/etc/passwd' INTO TABLE t1;
+
+
+# 查看用户进程
+SHOW PROCESSLIST;
+
+
+
+/**
+ * mysql 复制
+ */
+
+# ① 在主库上，设置一个复制使用的账户，并授予replication slave权限
+GRANT REPLICATION SLAVE ON *.* TO 'rep1'@'192.168.7.200' IDENTIFIED BY '1234test';
+# ② 修改主数据库服务器的配置文件my.cnf，开启binlog，并设置server-id的值。重启后生效。
+-- 在my.cnf中修改如下：
+[mysqld]
+log-bin = /home/mysql/log/mysql-bin.log
+server-id = 1
+# ③ 在主库上，设置读锁定有效，这个操作是为了确保没有数据库操作，以便获得一个一致性的快照
+FLUSH tables with read lock;
+# ④ 然后得到主库当前的二进制日志名和偏移量值。这个操作的目的是为了在从数据库启动以后，从这个点开始进行数据的恢复。
+SHOW MASTER STATUS;
+# ⑤ 现在主数据库服务器已经停止了更新操作，需要生成主数据库的备份。如果主数据库的服务可以停止，直接复制数据文件是最快生成快照的方法。
+$ tar -cvf data.tar data
+# ⑥ 主数据库的备份完毕后，可以恢复写操作，剩下的操作只需要在从库上执行。
+UNLOCK TABLES ;
+# ⑦ 将主数据库的一致性备份恢复到从数据库上。如果使用.tar打包的文件包，只需要解开到相应的目录即可。
+# ⑧ 修改从数据库的my.cnf，增加server-id参数。注意server-id是唯一的，不能和主数据库的配置相同，如果有多个从数据库服务器，都要有自己的唯一server-id。
+[mysqld]
+server-id = 2
+# ⑨ 在从库上，使用 --skip-slave-start 选项启动从数据库，这样不会立即启动从数据库服务器上的复制进程，方便进一步配置。
+$ ./bin/mysqld_safe --skip-slave-start
+# ⑩ 对从数据库服务器做相应的设置，指定复制使用的用户，主数据库服务器的ip、端口、以及开始执行复制的日志文件和位置。
+CHANGE MASTER TO
+master_host = '192.168.7.83',
+master_port = 3306,
+master_user = 'repl1',
+master_password = '1234test',
+master_log_file = 'mysql-bin.000039',
+master_log_pos = 102;
+# 11. 从库上启动slave线程
+start SLAVE ;
+# 12. 查看进程
+SHOW PROCESSLIST \G;
+# 13. 测试
+
+
+
+# 查看binlog刷新到磁盘的频率
+show VARIABLES LIKE '%sync_binlog%';
+-- 默认情况 sync_binlog=0 表示mysql不控制binlog的刷新，由文件系统自己控制文件系统的刷新
+-- sync_binlog=1，表示每一次事务提交，mysql都把binlog刷新到磁盘
+
+
 ---------------------------------------------------
 
 now()                       当前日期
@@ -443,5 +615,5 @@ CASE WHEN val1 THEN [res1] ELSE [default] END               如果val1为真，�
 CASE [expr] WHEN val1 THEN [res1] ELSE [default] END        如果expr等于val1，返回res1，否则default
 
 
-
-msyql
+# 生成删除多表
+Select CONCAT( 'drop table if exists ', table_name, ';' ) FROM information_schema.tables Where table_name LIKE '%_copy';
