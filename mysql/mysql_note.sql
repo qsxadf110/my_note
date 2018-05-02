@@ -61,13 +61,17 @@ CREATE TABLE IF NOT EXISTS 表名(
     # 默认4位格式 1901~2115和0000     2位格式  70~69，表示1970~2069（5.5.27，已不再支持）
     字段名 YEAR not null default '0000' comment '年份',
     字段名 text not null default '' comment '个人简介',
-    # 设置主键，多主键，以逗号分隔。
+    # 设置主键，多主键，以逗号分隔。必须包含唯一的值,不能包含 NULL 值,每个表只能有一个主键
+    # 一是约束作用（constraint），用来规范一个存储主键和唯一性，但同时也在此key上建立了一个主键索引
     PRIMARY KEY (id),
+    # 规范数据的唯一性，但同时也在这个key上建立了一个唯一索引
+    UNIQUE KEY (字段名),
     # 唯一键，要去该列唯一，允许为空，但只能有一个空值
     CONSTRAINT 约束名 UNIQUE(字段名),
     # 创建外键，外键名为定义的外键约束的名称，一个表中不能有相同名称的外键
 	CONSTRAINT 外键名 FOREIGN KEY 字段名 REFERENCES 主表名(主键列),
 
+    # index是数据库的物理结构，它只是辅助查询的
 	# 普通索引
 	INDEX 索引名(字段名),
 	# 唯一索引
@@ -381,7 +385,8 @@ ALTER TABLE 表名 ENABLE KEYS;
 SET UNIQUE_CHECKS = 0;
 -- 导入结束后，打开唯一性校验
 SET UNIQUE_CHECKS = 1;
-
+# 导入sql文件
+source C:\a.sql;
 
 /**
  * show profile 分析sql
@@ -617,3 +622,12 @@ CASE [expr] WHEN val1 THEN [res1] ELSE [default] END        如果expr等于val1
 
 # 生成删除多表
 Select CONCAT( 'drop table if exists ', table_name, ';' ) FROM information_schema.tables Where table_name LIKE '%_copy';
+
+
+# 查看sql语句执行日志
+-- 查看是否开启日志
+show variables where Variable_name="general_log";
+-- 打开日志记录功能
+set global general_log=on;
+-- 查看日志存放路径
+show variables where Variable_name="general_log_file";
